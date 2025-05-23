@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         
         const textElement = document.createElement('div');
+        textElement.className= 'highlight-url';
         textElement.textContent = highlight.text;
         highlightElement.appendChild(textElement);
         

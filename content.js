@@ -2,13 +2,15 @@ let savePopup = null;
 
 document.addEventListener('mouseup', (event) => {
     removePopup();
-
+    
     try {
         const selection = window.getSelection();
+        
+    
+        const selectedText = selection ? selection.toString().trim() : "";
 
-        if (selection && selection.toString().trim().length > 0) {
-            const targetCheck = event.target;
-            createSavePopup(selection, event);
+        if (selectedText.length > 0) {
+            createSavePopup(selectedText, event); 
         }
     } catch (e) {
         if (e instanceof SecurityError) {
@@ -20,14 +22,14 @@ document.addEventListener('mouseup', (event) => {
     }
 });
 
-function createSavePopup(selection, event) {
+function createSavePopup(textToSave, event) {
     savePopup = document.createElement('div');
     savePopup.className = 'highlight-saver-popup';
     savePopup.textContent = 'Save Highlight';
     
     const topPos = event.pageY + 10;
     const leftPos = event.pageX + 10;
-
+    
     Object.assign(savePopup.style, {
         position: 'absolute',
         top: `${topPos}px`,
@@ -47,10 +49,11 @@ function createSavePopup(selection, event) {
     savePopup.addEventListener('mouseup', (e) => {
         e.stopPropagation();
     });
-
+   
     savePopup.addEventListener('click', ()=> {
         console.log('save clicked'); 
-        saveHighlight(selection.toString());
+        console.log("Text being passed to saveHighlight:", '"' + textToSave + '"');
+        saveHighlight(textToSave);
         removePopup();
         
     });
@@ -65,18 +68,38 @@ function removePopup() {
 }
 
 function saveHighlight(text) {
+    console.log("saveHighlight called with text:", text);
+    if (typeof text !== 'string' || text.trim().length === 0) {
+        console.error("saveHighlight called with invalid or empty text. Aborting save.");
+        return;
+    }
+
     const highlight = {
         id: Date.now().toString(), 
         text: text,
         url: window.location.href
     };
     
+    console.log("Attempting to save highlight object:", highlight);
+
     chrome.storage.local.get(['highlights'], (result) =>{
+        if (chrome.runtime.lastError) {
+            console.error("Error getting highlights from storage:", chrome.runtime.lastError.message);
+            return;
+        }
+        console.log("Retrieved from storage before saving:", result);
+
         const highlights = result.highlights || [];
         highlights.push(highlight);
         
+        console.log("Array to be set in storage:", highlights);
+
         chrome.storage.local.set({ highlights: highlights }, ()=> {
-            console.log('Highlight saved successfully');
+            if (chrome.runtime.lastError) {
+                console.error("Error saving highlights to storage:", chrome.runtime.lastError.message);
+            } else {
+                console.log('Highlight saved successfully (from callback)');
+            }
         });
     });
 }
@@ -92,7 +115,7 @@ document.addEventListener('mousedown', (event) => {
                  removePopup();
              } else {
                  console.error("Highlight Saver: Error during mousedown processing:", e);
-                 removePopup();
+        removePopup();
              }
          }
     }
