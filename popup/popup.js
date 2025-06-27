@@ -44,6 +44,14 @@ const loadHighlights = () => {
       });
       highlightElement.appendChild(deleteButton);
 
+      const summarizeButton = document.createElement("button");
+      summarizeButton.className = "summarize-button";
+      summarizeButton.textContent = "Summarize";
+      summarizeButton.addEventListener("click", () => {
+        // deleteHighlight(highlight.id);
+      });
+      highlightElement.appendChild(summarizeButton);
+
       container.appendChild(highlightElement);
     });
   });
