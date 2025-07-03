@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Save text highlights from any web page",
   "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["https://api.openai.com/*"],
   "action": {
     "default_popup": "popup/popup.html"
   },
