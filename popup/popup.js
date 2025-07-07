@@ -48,7 +48,25 @@ const loadHighlights = () => {
       summarizeButton.className = "summarize-button";
       summarizeButton.textContent = "Summarize";
       summarizeButton.addEventListener("click", () => {
-        // deleteHighlight(highlight.id);
+        summarizeButton.disabled = true;
+        summarizeButton.textContent = "Summarizing…";
+
+        chrome.runtime.sendMessage(
+          { action: "summarize", id: highlight.id },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              console.error(chrome.runtime.lastError.message);
+              alert("Could not start summarization.");
+            } else if (response?.ok) {
+              loadHighlights(); // will rebuild the list
+            } else {
+              alert("Background said: " + (response?.error || "unknown error"));
+            }
+
+            summarizeButton.disabled = false;
+            summarizeButton.textContent = "Summarize";
+          }
+        );
       });
       highlightElement.appendChild(summarizeButton);
 
