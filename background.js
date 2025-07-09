@@ -1,7 +1,18 @@
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "summarize") {
-    console.log("Background received summarize request for id:", msg.id);
+    chrome.storage.local.get(["apiKey"], (res) => {
+      const apiKey = (res.apiKey || "").trim();
 
-    sendResponse({ ok: true });
+      if (!apiKey) {
+        sendResponse({ error: "NO_KEY" });
+        return;
+      }
+
+      console.log("API key found, would summarise highlight id:", msg.id);
+
+      sendResponse({ ok: true });
+    });
+
+    return true;
   }
 });

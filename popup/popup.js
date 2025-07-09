@@ -57,6 +57,8 @@ const loadHighlights = () => {
             if (chrome.runtime.lastError) {
               console.error(chrome.runtime.lastError.message);
               alert("Could not start summarization.");
+            } else if (response?.error === "NO_KEY") {
+              alert("Please set your OpenAI API key in the Options page.");
             } else if (response?.ok) {
               loadHighlights(); // will rebuild the list
             } else {
