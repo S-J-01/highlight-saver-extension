@@ -24,7 +24,50 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           highlight.text.substring(0, 50) + "..."
         );
 
-        sendResponse({ ok: true });
+        fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [
+              {
+                role: "system",
+                content: "Summarize the following text in 1-2 sentences:",
+              },
+              {
+                role: "user",
+                content: highlight.text,
+              },
+            ],
+            max_tokens: 100,
+          }),
+        })
+          .then((resp) => resp.json())
+          .then((data) => {
+            if (data.error) {
+              console.error("OpenAI error:", data.error);
+              sendResponse({
+                error: "OPENAI_ERROR",
+                message: data.error.message,
+              });
+              return;
+            }
+
+            const summary = data.choices[0].message.content.trim();
+            console.log("Got summary:", summary);
+
+            highlight.summary = summary;
+            chrome.storage.local.set({ highlights }, () => {
+              sendResponse({ ok: true, summary });
+            });
+          })
+          .catch((err) => {
+            console.error("Fetch error:", err);
+            sendResponse({ error: "NETWORK_ERROR", message: err.message });
+          });
       });
 
       return true;
